@@ -2,6 +2,7 @@
 import sys
 import re
 import logging
+import argparse
 
 def slt(text):
     """Converts character that have special meaning in latex into latex equivalents."""
@@ -12,48 +13,59 @@ def slt(text):
     return text
 
 def usage():
-    return "usage: %s PAIRING"% sys.argv[0]
+    return "usage: %s PAIRING_FILE OUTPUT_FILE"% sys.argv[0]
 
-logging.basicConfig(filename='log', level=logging.DEBUG)
-
-logging.info(repr(sys.argv))
-
-if len(sys.argv) != 3:
-    sys.exit(1)
-
-with open('template_prj.tex', 'r') as fin:
-    templ_prj = fin.read()
-with open('template_one.tex', 'r') as fin:
-    templ_one = fin.read()
+def main(pa):
+    with open('template_prj.tex', 'r') as fin:
+        templ_prj = fin.read()
+    with open('template_one.tex', 'r') as fin:
+        templ_one = fin.read()
+        
+    with open(pa.input, 'r') as fin:
+        data = fin.readlines()
     
-with open(sys.argv[1], 'r') as fin:
-    data = fin.readlines()
-
-tournament_name, when = [ s.strip() for s in data[0].strip().split('-') ]
-num_round = when.split()[-1]
-
-out = []
-keys = [ tag.upper() for tag in data[1].strip().split('\t')]
-
-for line in data[2:]:
-    match = re.search("^([0-9]*)\t?([^\t]*)\t?([^\t]*)\t?([^\t]*)\t?([^\t]*)\t?", line.strip())
-    assert match
+    tournament_name, when = [ s.strip() for s in data[0].strip().split('-') ]
+    num_round = when.split()[-1]
     
-    g = match.groups()
+    if pa.tn:
+        tournament_name = pa.tn
+    if pa.tr:
+        num_round = pa.tr
     
-    tups = zip(keys, g) + [("TOURNAMENT_NAME", tournament_name), 
-                           ("ROUND", num_round)]
+    out = []
+    keys = [ tag.upper() for tag in data[1].strip().split('\t')]
     
-    one = templ_one
+    for line in data[2:]:
+        match = re.search("^([0-9]*)\t?([^\t]*)\t?([^\t]*)\t?([^\t]*)\t?([^\t]*)\t?", line.strip())
+        assert match
+        
+        g = match.groups()
+        
+        tups = zip(keys, g) + [("TOURNAMENT_NAME", tournament_name), 
+                               ("ROUND", num_round)]
+        one = templ_one
+        for key, val in tups:
+            one = one.replace("$" + key, slt(val))
+        out.append(one)
+        
+    doc = templ_prj.replace("$CONTENT",  '\n'.join(out))
     
-    for key, val in tups:
-        one = one.replace("$" + key, slt(val))
+    with open(pa.output, 'w') as fout:
+        fout.write(doc)
+        
+if __name__ == "__main__":
+    logging.basicConfig(filename='log',
+                        level=logging.DEBUG,
+                        format="GEN: %(asctime)s %(levelname)s %(message)s")
+    logging.info(repr(sys.argv))
     
-    out.append(one)
-    
-doc = templ_prj.replace("$CONTENT",  '\n'.join(out))
+    parser = argparse.ArgumentParser()
+    parser.add_argument('input', metavar='INPUT_FILE')
+    parser.add_argument('output', metavar='OUTPUT_FILE')
+                        
+    parser.add_argument('-tn', type=str, default='', help='force tournament name')
+    parser.add_argument('-tr', type=str, default='', help='force tournament round')
 
+    pa = parser.parse_args()
 
-with open(sys.argv[2], 'w') as fout:
-    fout.write(doc)
-
+    main(pa)
