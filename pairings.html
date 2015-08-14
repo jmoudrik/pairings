@@ -5,23 +5,41 @@
 
 <!--
 -->
-<title>Pairings App v 0.1</title>
+
+<title>Pairing Result Form App &ndash; v0.2</title>
 
 </head>
 <body>
-    <h1>Pairings App v 0.1</h1>
-    <form name="form_submit" class="form-inline" method="POST" enctype="multipart/form-data" action="http://gostyle.j2m.cz:8080/upload-w/submit">
-    <ol>
+	<h1>Pairing Result Form App  &ndash; v0.2</h1>
+    <form name="form_submit" class="form-inline" method="POST" enctype="multipart/form-data" action="submit">
+    <ul>
     <li>
-    <label for="input_file">Upload pairing file, archive size limit is 0.5 MB.
-    </label>
-    <br />
-    <input id="input_file" name='user_file' class="input-medium" type='file' />
-    <br />
+		<label for="input_file">Upload pairing file, size limit is 512 kB.
+		</label>
+		<br />
+		<input id="input_file" name='user_file' class="input-medium" type='file' />
+		<br />
     </li>
-    </ol>
+
+    <li>
+		<label for="tournament_name">You can <b>override the tournament name</b> specified in the pairing list on first line:
+		</label>
+		<br />
+		<input id="tournament_name" name='user_tournament_name'  class="input-medium" type='text' placeholder='Force Tournament Name' />
+		<br />
+    </li>
+
+    <li>
+	<label for="round_number">You can <b>override the round number</b> specified in the pairing list on first line:
+		</label>
+		<br />
+		<input id="round_number" name='user_round_number'  class="input-medium" type='text' placeholder='Force Round Number' />
+		<br />
+    </li>
+    </ul>
+
     <br />
-    <input class='btn' type='submit' value='Proceed!' />
+    <input class='btn' type='submit' value='Generate Forms!' />
     </form>
 </body>
 </html>

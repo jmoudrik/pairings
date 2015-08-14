@@ -27,11 +27,14 @@ def unique_hash(length=32):
     return sha256( "%.20f %s %d %d"%(time.time(), random_hash(), os.getpid(), threading.current_thread().ident ) ) [:length]
 
 
-## Url mappings
+## Logging, Constants, Globals
 
 logging.basicConfig(filename='log', level=logging.DEBUG)
 logging.info(os.getcwd())
 cgi.maxlen = 512 * 1024
+
+DEBUG = True
+USE_PDFLATEX = True
 
 urls = (
     '/',  'PairingsStatic',
@@ -51,19 +54,27 @@ class Submit:
             x = web.input()
         except ValueError:
             logging.info("File too big.")
-            return "File is too big. Limit is 512 kB."
+            return "File too big. Limit is 512 kB."
 
         fname = unique_hash()
         logging.info(fname)
 
         with open(fname, 'w') as fout:
             fout.write(x['user_file'])
+            
+        extra_args = []
+        if x['user_tournament_name']:
+            assert len(x['user_tournament_name']) < 20
+            extra_args.extend(['-tn', x['user_tournament_name']])
+            
+        if x['user_round_number']:
+            assert len(x['user_round_number']) < 8
+            extra_args.extend(['-tr', x['user_round_number']])
 
-
-        ret = subprocess.check_call([ './gen.py', fname, fname + ".tex" ])
+        ret = subprocess.check_call([ './gen.py'] + extra_args + [fname, fname + ".tex" ])
         assert ret == 0
 
-        if False:
+        if USE_PDFLATEX:
             ret = subprocess.check_call([ 'pdflatex', fname + '.tex' ])
             assert ret == 0
         else:
@@ -84,7 +95,7 @@ class Submit:
 #
 
 app = web.application(urls, globals())
-#web.config.debug = False
+web.config.debug = DEBUG
 
 if __name__ == '__main__':
     app.run()
