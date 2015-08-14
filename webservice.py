@@ -26,10 +26,16 @@ def unique_hash(length=32):
     """
     return sha256( "%.20f %s %d %d"%(time.time(), random_hash(), os.getpid(), threading.current_thread().ident ) ) [:length]
 
-
+def check_or_die(cond, msg):
+    if not cond:
+        logging.info("BadRequest: '%s'"%msg)
+        raise web.BadRequest(msg)
+    
 ## Logging, Constants, Globals
 
-logging.basicConfig(filename='log', level=logging.DEBUG)
+logging.basicConfig(filename='log',
+                    level=logging.DEBUG,
+                    format="WEB: %(asctime)s %(levelname)s %(message)s")
 logging.info(os.getcwd())
 cgi.maxlen = 512 * 1024
 
@@ -53,8 +59,8 @@ class Submit:
         try:
             x = web.input()
         except ValueError:
-            logging.info("File too big.")
-            return "File too big. Limit is 512 kB."
+            check_or_die(False,
+                         "File too big. Limit is 512 kB.")
 
         fname = unique_hash()
         logging.info(fname)
@@ -64,11 +70,13 @@ class Submit:
             
         extra_args = []
         if x['user_tournament_name']:
-            assert len(x['user_tournament_name']) < 20
+            check_or_die(len(x['user_tournament_name']) <= 30,
+                         "Tournament name too long (limit is 30 characters).")
             extra_args.extend(['-tn', x['user_tournament_name']])
             
         if x['user_round_number']:
-            assert len(x['user_round_number']) < 8
+            check_or_die(len(x['user_round_number']) <= 8,
+                         "Round number too long (limit is 8 characters).")
             extra_args.extend(['-tr', x['user_round_number']])
 
         ret = subprocess.check_call([ './gen.py'] + extra_args + [fname, fname + ".tex" ])
