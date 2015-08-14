@@ -39,7 +39,7 @@ logging.basicConfig(filename='log',
 logging.info(os.getcwd())
 cgi.maxlen = 512 * 1024
 
-DEBUG = True
+DEBUG = False
 USE_PDFLATEX = True
 
 urls = (
@@ -62,8 +62,11 @@ class Submit:
             check_or_die(False,
                          "File too big. Limit is 512 kB.")
 
-        fname = unique_hash()
+        fname = 'tmp_' + unique_hash()
         logging.info(fname)
+        
+        check_or_die(x['user_file'],
+                     "No data submitted.")
 
         with open(fname, 'w') as fout:
             fout.write(x['user_file'])
