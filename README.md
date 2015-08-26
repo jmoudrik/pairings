@@ -1,3 +1,3 @@
 # pairings
 
-is a tool for generating of *Tournament Pairing Result Forms*, which is running [here](http://gostyle.j2m.cz/pairings)
+A webapp tool for generation of **Tournament Pairing Result Forms** for the game of Go. An instance is running **[here](http://gostyle.j2m.cz/pairing)!**
