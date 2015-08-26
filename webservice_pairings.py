@@ -26,11 +26,15 @@ def unique_hash(length=32):
     """
     return sha256( "%.20f %s %d %d"%(time.time(), random_hash(), os.getpid(), threading.current_thread().ident ) ) [:length]
 
+class ReportError(Exception):
+    def __init__(self, message):
+        self.message = message
+
 def check_or_die(cond, msg):
     if not cond:
-        logging.info("BadRequest: '%s'"%msg)
-        raise web.BadRequest(msg)
-    
+        logging.info("ReportError: '%s'"%msg)
+        raise ReportError(msg)
+
 ## Logging, Constants, Globals
 
 logging.basicConfig(filename='log',
@@ -52,31 +56,19 @@ class PairingsStatic:
         #web.header("Content-Type", 'application/pdf')
         return open('pairings.html',  'rb').read()
 
-class Submit:
-    def POST(self):
-        logging.info("Submit from '%s'"%(str(web.ctx.ip) ))
-
-        try:
-            x = web.input()
-        except ValueError:
-            check_or_die(False,
-                         "File too big. Limit is 512 kB.")
-
-        fname = 'tmp_' + unique_hash()
-        logging.info(fname)
-        
+def gen_pdf(x, fname):
         check_or_die(x['user_file'],
                      "No data submitted.")
 
         with open(fname, 'w') as fout:
             fout.write(x['user_file'])
-            
+
         extra_args = []
         if x['user_tournament_name']:
             check_or_die(len(x['user_tournament_name']) <= 30,
                          "Tournament name too long (limit is 30 characters).")
             extra_args.extend(['-tn', x['user_tournament_name']])
-            
+
         if x['user_round_number']:
             check_or_die(len(x['user_round_number']) <= 8,
                          "Round number too long (limit is 8 characters).")
@@ -97,6 +89,29 @@ class Submit:
 
             ret = subprocess.check_call([ 'ps2pdf', '-dEmbedAllFonts', fname + '.ps' ])
             assert ret == 0
+
+
+class Submit:
+    def POST(self):
+        logging.info("Submit from '%s'"%(str(web.ctx.ip) ))
+
+        try:
+            x = web.input()
+        except ValueError:
+            check_or_die(False,
+                         "File too big. Limit is 512 kB.")
+
+        fname = 'tmp_' + unique_hash()
+        logging.info(fname)
+
+        try:
+            gen_pdf(x, fname)
+        except ReportError as e:
+            # return error in plaintext
+            return e.message
+
+        # all other errors (asserts) result in InternalServerError
+        # (which is what we want)
 
         web.header("Content-Type", 'application/pdf')
         return open(fname + '.pdf',  'rb').read()
