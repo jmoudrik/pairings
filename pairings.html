@@ -5,19 +5,23 @@
 
 <!--
 -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 
-<title>Pairing Result Form App &ndash; v0.2</title>
+
+<title>Tournament Pairing Result Forms &ndash; v0.2</title>
+
 
 </head>
 <body>
-	<h1>Pairing Result Form App  &ndash; v0.2</h1>
+<div class="container">
+	<h1>Tournament Pairing Result Forms  &ndash; v0.2</h1>
     <form name="form_submit" class="form-inline" method="POST" enctype="multipart/form-data" action="submit">
     <ul>
     <li>
 		<label for="input_file">Upload pairing file, size limit is 512 kB.
 		</label>
 		<br />
-		<input id="input_file" name='user_file' class="input-medium" type='file' />
+		<input id="input_file" name='user_file' class="filestyle input-medium" type='file' />
 		<br />
     </li>
 
@@ -25,7 +29,7 @@
 		<label for="tournament_name">You can <b>override the tournament name</b> specified in the pairing list on first line:
 		</label>
 		<br />
-		<input id="tournament_name" name='user_tournament_name'  class="input-medium" type='text' placeholder='Force Tournament Name' />
+		<input id="tournament_name" name='user_tournament_name'  class="input-large" type='text' placeholder='Force Tournament Name' />
 		<br />
     </li>
 
@@ -33,13 +37,23 @@
 	<label for="round_number">You can <b>override the round number</b> specified in the pairing list on first line:
 		</label>
 		<br />
-		<input id="round_number" name='user_round_number'  class="input-medium" type='text' placeholder='Force Round Number' />
+		<input id="round_number" name='user_round_number'  class="input-large" type='text' placeholder='Force Round Number' />
 		<br />
     </li>
     </ul>
 
     <br />
-    <input class='btn' type='submit' value='Generate Forms!' />
+    <input class='btn btn-primary active' type='submit' value='Generate Forms!' />
     </form>
+
+
+	
+    <hr />
+    <footer>
+    <p>
+       2015, <a href='http://www.j2m.cz/~jm'>Josef Moudřík</a>
+    </p>
+    </footer>
+</div>
 </body>
 </html>
